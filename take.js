@@ -1,6 +1,6 @@
 module.exports = function (RED) {
 
-    const cooldown = (node, resetTimeout, maxTry) => {
+    const cooldown = (node, resetTimeout, maxTry, sendLastSkippedMsg) => {
         const cooldownTime =  (node.startTime + resetTimeout * 1000) - new Date().getTime();
         if (cooldownTime > 0) {
             const fill = node.counter > maxTry ? 'red' : 'green';
@@ -9,6 +9,10 @@ module.exports = function (RED) {
         } else {
             node.counter = 0;
             node.status({ fill: 'green', shape: 'dot', text: `0/${maxTry}` });
+            if (sendLastSkippedMsg && node.lastSkippedMsg) {
+                node.send([node.lastSkippedMsg, null]);
+                node.lastSkippedMsg = null;
+            }
             if (node.done) {
                 node.done();
             }
@@ -20,6 +24,7 @@ module.exports = function (RED) {
         const node = this;
         const maxTry = config.attempts;
         const resetTimeout = config.timeout;
+        const sendLastSkippedMsg = config.sendLastSkippedMsg;
 
         node.status({ fill: 'green', shape: 'dot', text: `0/${maxTry}` });
 
@@ -34,6 +39,7 @@ module.exports = function (RED) {
             if (msg?.resetTimer) {
                 node.counter = 0;
                 node.status({ fill: 'green', shape: 'dot', text: `0/${maxTry}` });
+                node.lastSkippedMsg = null;
             } else {
                 node.counter = node.counter || 0;
                 node.counter++;
@@ -41,11 +47,13 @@ module.exports = function (RED) {
                 if (node.counter > maxTry) {
                     node.send([null, msg]);
                     node.status({ fill: 'red', shape: 'dot', text: `${node.counter}/${maxTry} ${resetTimeout}s` });
+                    node.lastSkippedMsg = msg;
                 } else {
                     node.send([msg, null]);
                     node.status({ fill: 'green', shape: 'ring', text: `${node.counter}/${maxTry} ${resetTimeout}s` });
+                    node.lastSkippedMsg = null;
                 }
-                node.subscription = setTimeout(() => cooldown(node, resetTimeout, maxTry), (resetTimeout % 1000) || 1000);
+                node.subscription = setTimeout(() => cooldown(node, resetTimeout, maxTry, sendLastSkippedMsg), (resetTimeout % 1000) || 1000);
             }
 
             if (node.done) {
