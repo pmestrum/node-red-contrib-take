@@ -1,0 +1,86 @@
+<script type="text/javascript">
+    RED.nodes.registerType('take', {
+        category: 'function',
+        color: '#ffd900',
+        paletteLabel: "take",
+        defaults: {
+            name: { value: "" },
+            attempts: { value: 3 },
+            timeout: { value: 30 },
+        },
+        inputs: 1,
+        outputs: 2,
+        inputLabels: ['Value', 'Reset'],
+        icon: "font-awesome/fa-hand-rock-o",
+        label: function () {
+            return this.name || "take";
+        },
+        oneditprepare: function () {
+            $("node-input-attempts").typedInput({
+                type: 'num',
+                types: ['num'],
+                typeField: "#node-input-attempts-type"
+            });
+            $("node-input-timeout").typedInput({
+                type: 'num',
+                types: ['num'],
+                typeField: "#node-input-timeout-type"
+            });
+        }
+    });
+</script>
+
+<script type="text/html" data-template-name="take">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i>Name</label>
+        <input type="text" id="node-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-attempts"><i class="fa fa-tag"></i> Nr of attempts</label>
+        <input type="text" id="node-input-attempts" placeholder="3">
+        <input type="hidden" id="node-input-attempts-type">
+    </div>
+    <div class="form-row">
+        <label for="node-input-timeout"><i class="fa fa-tag"></i> Reset timeout (secs)</label>
+        <input type="text" id="node-input-timeout" placeholder="30">
+        <input type="hidden" id="node-input-timeout-type">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="take">
+    <p>Limit the amount of messages passed in time</p>
+
+    <h3>Configuration</h3>
+    <dl class="message-properties"></dl>
+    <dt>Name
+        <span class="property-type">string</span>
+    </dt>
+    <dd>The name of the entity</dd>
+    <dt>Nr of attempts
+        <span class="property-type">integer</span>
+    </dt>
+    <dd>How many messages may pass</dd>
+    <dl class="message-properties"></dl>
+    <dt>Reset timeout
+        <span class="property-type">integer</span>
+    </dt>
+    <dd>How long till counter is reset</dd>
+
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt class="optional">msg</dt>
+        <dd> the msg to pass if allowed.</dd>
+        <dt class="optional">resetTimer</dt>
+        <dd>if truthy, reset the node, don't pass anything</dd>
+    </dl>
+
+    <h3>Outputs</h3>
+    <ol class="node-ports">
+        <li>msg passed
+            <dl>The msg object that came in, if allowed to pass</dl>
+        </li>
+        <li>msg filtered out
+            <dl>The msg object that came in, if not allowed to pass</dl>
+        </li>
+    </ol>
+</script>
