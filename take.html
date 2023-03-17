@@ -6,12 +6,15 @@
         defaults: {
             name: { value: "" },
             attempts: { value: 3 },
+            attemptsType: { value: 'num' },
             timeout: { value: 30 },
-            sendLastSkippedMsg: { value: false }
+            timeoutType: { value: 'num' },
+            sendLastSkippedMsg: { value: false },
+            restartTimerOnInput: { value: true },
         },
         inputs: 1,
         outputs: 2,
-        inputLabels: ['Value', 'Reset', 'Send last skipped msg'],
+        inputLabels: ['Value', 'Reset'],
         icon: "font-awesome/fa-hand-rock-o",
         label: function () {
             if (this.name) {
@@ -20,8 +23,10 @@
             if (this.sendLastSkippedMsg) {
                 switch (this.attempts) {
                     case 0:
+                    case '0':
                         return `debounce until ${this.timeout}s`;
                     case 1:
+                    case '1':
                         return `once in ${this.timeout}s or delayed`;
                     default:
                         return `${this.attempts} times in ${this.timeout}s or delayed`;
@@ -29,8 +34,10 @@
             } else {
                 switch (this.attempts) {
                     case 0:
+                    case '0':
                         return `never (0 attempts)`;
                     case 1:
+                    case '1':
                         return `once in ${this.timeout}s`;
                     default:
                         return `${this.attempts} times in ${this.timeout}s`;
@@ -38,20 +45,13 @@
             }
         },
         oneditprepare: function () {
-            $("node-input-attempts").typedInput({
-                type: 'num',
+            $("#node-input-attempts").typedInput({
+                default: 'num',
                 types: ['num'],
-                typeField: "#node-input-attempts-type"
             });
-            $("node-input-timeout").typedInput({
-                type: 'num',
+            $("#node-input-timeout").typedInput({
+                default: 'num',
                 types: ['num'],
-                typeField: "#node-input-timeout-type"
-            });
-            $("node-input-sendLastSkippedMsg").typedInput({
-                type: 'bool',
-                types: ['bool'],
-                typeField: "#node-input-sendLastSkippedMsg-type"
             });
         }
     });
@@ -65,17 +65,20 @@
     <div class="form-row">
         <label for="node-input-attempts"><i class="fa fa-tag"></i> Nr of attempts</label>
         <input type="text" id="node-input-attempts" placeholder="3">
-        <input type="hidden" id="node-input-attempts-type">
     </div>
     <div class="form-row">
         <label for="node-input-timeout"><i class="fa fa-tag"></i> Reset timeout (secs)</label>
         <input type="text" id="node-input-timeout" placeholder="30">
-        <input type="hidden" id="node-input-timeout-type">
     </div>
     <div class="form-row">
-        <label for="node-input-sendLastSkippedMsg"><i class="fa fa-tag"></i> Send last skipped msg when timeout finishes</label>
-        <input type="text" id="node-input-sendLastSkippedMsg">
-        <input type="hidden" id="node-input-sendLastSkippedMsg-type">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-sendLastSkippedMsg" placeholder="Send last skipped msg" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-sendLastSkippedMsg" style="width: 70%;">Send last skipped</label>
+    </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <input type="checkbox" id="node-input-restartTimerOnInput" placeholder="Restart timer on new input" style="display: inline-block; width: auto; vertical-align: top;">
+        <label for="node-input-restartTimerOnInput" style="width: 70%;">Restart timer on new input</label>
     </div>
 </script>
 
@@ -102,6 +105,11 @@
         <span class="property-type">bool</span>
     </dt>
     <dd>If messages were skipped, send last received message at the end of the cooldown period</dd>
+    <dl class="message-properties"></dl>
+    <dt>Restart timer on input
+        <span class="property-type">bool</span>
+    </dt>
+    <dd>If a new object comes in, restart the timer</dd>
 
     <h3>Inputs</h3>
     <dl class="message-properties">
